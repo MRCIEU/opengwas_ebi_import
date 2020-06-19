@@ -3,7 +3,12 @@ library(GwasDataImport)
 print(getwd())
 
 # Get list of files
-ignore_list <- scan("ignorelist.txt")
+if(file.exists("ignorelist.txt"))
+{
+	ignore_list <- scan("ignorelist.txt")
+} else {
+	ignore_list <- c()
+}
 newdats <- determine_new_datasets(blacklist=ignore_list)
 newdats <- being_processed(newdats) %>% subset(., need)
 print(newdats)
