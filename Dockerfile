@@ -1,8 +1,9 @@
-FROM rocker/tidyverse
+# FROM rocker/r-base
+FROM bioconductor/bioconductor_docker:devel
 
 RUN apt-get update && apt-get -y install cron
 
-RUN R -e "remotes::install_github('mrcieu/GwasDataImport')"
+RUN R -e "remotes::install_github('mrcieu/GwasDataImport', upgrade='always')"
 
 RUN mkdir -p /app
 COPY . /app/
