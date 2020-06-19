@@ -1,11 +1,34 @@
+#!/usr/bin/env Rscript
+
 library(GwasDataImport)
 
-print(getwd())
+thisFile <- function() {
+	cmdArgs <- commandArgs(trailingOnly = FALSE)
+	needle <- "--file="
+	match <- grep(needle, cmdArgs)
+	if (length(match) > 0) {
+		# Rscript
+		return(normalizePath(sub(needle, "", cmdArgs[match])))
+	} else {
+		# 'source'd via R console
+		return(normalizePath(sys.frames()[[1]]$ofile))
+	}
+}
+
+scriptdir <- function()
+{
+	thisfile <- thisFile()
+	return(dirname(thisfile))
+}
+
+wd <- scriptdir()
+
+ignore_file <- file.path(wd, "ignorelist.txt")
 
 # Get list of files
-if(file.exists("ignorelist.txt"))
+if(file.exists(ignore_file))
 {
-	ignore_list <- scan("ignorelist.txt")
+	ignore_list <- scan(ignore_file, what="character")
 } else {
 	ignore_list <- c()
 }
@@ -31,4 +54,4 @@ for(i in 1:nrow(newdats))
 
 ignore <- unlist(ignore)
 newignore <- unique(c(ignore, ignore_list))
-write.table(newignore, file="ignorelist.txt", row=F, col=F, qu=F)
+write.table(newignore, file=ignore_file, row=F, col=F, qu=F)
