@@ -1,1 +1,1 @@
-0 1 * * * /app/import.r
+0 2 * * * /usr/local/bin/Rscript /app/import.r > /app/import.out 2>/app/import.err
