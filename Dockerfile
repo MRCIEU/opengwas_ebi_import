@@ -1,7 +1,9 @@
 # FROM rocker/r-base
 FROM bioconductor/bioconductor_docker:devel
 
-RUN apt-get update && apt-get -y install cron
+RUN apt-get update 
+RUN apt-get -y install cron
+RUN apt-get -y install ncftp
 
 RUN R -e "remotes::install_github('mrcieu/GwasDataImport', upgrade='always')"
 

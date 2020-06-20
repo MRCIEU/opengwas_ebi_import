@@ -1,6 +1,8 @@
 #!/usr/bin/env Rscript
 
 library(GwasDataImport)
+library(dplyr)
+library(data.table)
 
 thisFile <- function() {
 	cmdArgs <- commandArgs(trailingOnly = FALSE)
@@ -21,6 +23,14 @@ scriptdir <- function()
 	return(dirname(thisfile))
 }
 
+update_ignore_list <- function(ignore_list, newid, filename)
+{
+	n <- tibble(id=newid, date=Sys.time())
+	ignore_list <- bind_rows(ignore_list, n)
+	write.table(ignore_list, file=filename, row=F, col=TRUE, qu=TRUE, sep=",")
+	return(ignore_list)
+}
+
 wd <- scriptdir()
 
 ignore_file <- file.path(wd, "ignorelist.txt")
@@ -28,15 +38,15 @@ ignore_file <- file.path(wd, "ignorelist.txt")
 # Get list of files
 if(file.exists(ignore_file))
 {
-	ignore_list <- scan(ignore_file, what="character")
+	message("Loading ignore list")
+	ignore_list <- fread(ignore_file)
 } else {
-	ignore_list <- c()
+	ignore_list <- data.frame(id=NULL, date=NULL)
 }
 newdats <- determine_new_datasets(blacklist=ignore_list)
 newdats <- being_processed(newdats) %>% subset(., need)
 print(newdats)
 
-ignore <- list()
 for(i in 1:nrow(newdats))
 {
 	message(newdats$ebi_id[i])
@@ -47,11 +57,8 @@ for(i in 1:nrow(newdats))
 	o <- x$pipeline()
 	if(! "NULL" %in% class(o))
 	{
-		ignore[[newdats$ebi_id[i]]] <- o
+		message("Adding ignoring ", o, " to ignore list")
+		ignore_list <- update_ignore_list(ignore_list, o, ignore_file)
 	}
 	rm(x)
 }
-
-ignore <- unlist(ignore)
-newignore <- unique(c(ignore, ignore_list))
-write.table(newignore, file=ignore_file, row=F, col=F, qu=F)
