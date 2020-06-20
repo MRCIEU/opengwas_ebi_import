@@ -1,4 +1,3 @@
-# FROM rocker/r-base
 FROM bioconductor/bioconductor_docker:devel
 
 RUN apt-get update 

@@ -25,13 +25,14 @@ scriptdir <- function()
 
 update_ignore_list <- function(ignore_list, newid, filename)
 {
-	n <- tibble(id=newid, date=Sys.time())
+	n <- tibble(id=newid, date=as.character(Sys.time()))
 	ignore_list <- bind_rows(ignore_list, n)
 	write.table(ignore_list, file=filename, row=F, col=TRUE, qu=TRUE, sep=",")
 	return(ignore_list)
 }
 
 wd <- scriptdir()
+dir.create(file.path(wd, "processing"))
 
 ignore_file <- file.path(wd, "ignorelist.txt")
 
@@ -43,7 +44,7 @@ if(file.exists(ignore_file))
 } else {
 	ignore_list <- data.frame(id=NULL, date=NULL)
 }
-newdats <- determine_new_datasets(blacklist=ignore_list)
+newdats <- determine_new_datasets(blacklist=ignore_list$id)
 newdats <- being_processed(newdats) %>% subset(., need)
 print(newdats)
 
@@ -52,7 +53,8 @@ for(i in 1:nrow(newdats))
 	message(newdats$ebi_id[i])
 	x <- EbiDataset$new(
 		ebi_id = newdats$ebi_id[i], 
-		ftp_path = newdats$path[i]
+		ftp_path = newdats$path[i],
+		wd = file.path(wd, "processing", newdats$ebi_id[i])
 	)
 	o <- x$pipeline()
 	if(! "NULL" %in% class(o))
